@@ -1,0 +1,48 @@
+version: '3.9'
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - "./.srv/database:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: local-pass
+      MYSQL_DATABASE: local-websolutions
+      MYSQL_USER: local-name
+      MYSQL_PASSWORD: local-pass
+
+  wordpress:
+    image: wordpress:latest
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    ports:
+      - 8000:80
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: local-name
+      WORDPRESS_DB_PASSWORD: local-pass
+      WORDPRESS_DB_NAME: local-websolutions
+      WORDPRESS_DEBUG: 1
+    volumes:
+      - ./.srv/wordpress/:/var/www/html
+      - ./theme:/var/www/html/wp-content/themes/geniuscourses
+      - ./theme/plugin:/var/www/html/wp-content/plugins/geniuscourses-core
+      - ./.srv/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    ports:
+      - 8181:80
+    environment:
+      MYSQL_USERNAME: local-name
+      MYSQL_ROOT_PASSWORD: local-pass
+      PMA_HOST: mysql
